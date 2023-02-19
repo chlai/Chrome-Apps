@@ -1,0 +1,85 @@
+<html lang="en" class="h-full">
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="robots" content="noindex">
+    <script src="./config.js"></script>
+    <title>賽馬會滘西洲公眾高爾夫球場</title>
+    <script>var JSElement = document.createElement("script"); function gtag() { dataLayer.push(arguments) } JSElement.src = "https://www.googletagmanager.com/gtag/js?id=" + config.n_gtag_1, document.getElementsByTagName("head")[0].appendChild(JSElement), window.dataLayer = window.dataLayer || [], gtag("js", new Date), gtag("config", config.n_gtag_2)</script>
+    <script src="https://www.googletagmanager.com/gtag/js?id="></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#000000">
+    <meta name="description" content="RoomQ Waiting Room">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&amp;display=swap"
+        rel="stylesheet">
+    <title></title>
+    <link href="/static/css/main.fb30855a.chunk.css" rel="stylesheet">
+</head>
+
+<body class="h-full overflow-hidden"><noscript>You need to enable JavaScript to run this app.</noscript>
+    <div class="h-full" id="root">
+        <div class="h-full flex flex-row">
+            <div class="p-4 md:p-20 max-h-full overflow-y-auto flex-1">
+ 
+                <iframe width="420" height="315" src="https://www.youtube.com/embed/tgbNymZ7vqY">
+                </iframe>
+                <div>
+                    <p id="subtitle_zh" class="md:text-xl">請注意訂場服務將會由下午5時正開始辦理。</p>
+                    <p id="subtitle_en" class="md:text-xl">Please note that the booking function will begin at 5:00 PM
+                    </p>
+                </div>
+                <div class="flex flex-row my-12 items-center" id="progress_bar_div" style="display: flex;">
+                    <div class="flex-1 relative bg-gray-100 h-3 rounded-full" id="progress_bar">
+                        <div class="absolute left-0 top-0 h-full w-1/12 bg-primary rounded-full"
+                            style="width: 0%; background-color: rgb(0, 172, 238);"></div>
+                    </div>
+                </div>
+                <div class="md:text-l">
+                    <div class="flex flex-row" style="display: flex;">
+                        <div id="queue_position_hint" class="w-1/2 mr-4 flex items-center text-info">在您前面的用戶有: <br>
+                            Number of user in queue ahead of you:</div>
+                        <div id="queue_position" class="flex-1 flex items-center font-medium">暫未能提供<br>Not Yet Available
+                        </div>
+                    </div>
+                    <div class="flex flex-row mt-8" style="display: flex;">
+                        <div id="est_time_hint" class="w-1/2 mr-4 flex items-center text-info">預計等候時間: <br> Estimated
+                            wait time is:</div>
+                        <div id="est_time" class="flex-1 flex items-center font-medium">暫未能提供<br>Not Yet Available</div>
+                    </div>
+                </div>
+                <div id="enqueue_notice_div"
+                    class="flex flex-row items-center mt-8 text-sm text-gray-800 rounded-lg p-2 border border-red-400"
+                    style="display: none;">
+                    <p id="enqueue_notice_p">閣下早前的排隊號碼因逾時已不適用，新的排隊號碼經已派發 <br>Your previous Ticket Number is expired, new
+                        Ticket Number is issued to you.</p>
+                </div>
+                <div class="flex flex-row items-center mt-8 text-remark" style="display: flex;"><img
+                        class="mr-2 object-contain" src="dot.png" style="width: 12px; height: 10px;">
+                    <p id="last_update">最近更新時間 Last updated:04:57:39 PM</p>
+                </div>
+                <div class="flex flex-row items-center text-remark ml-5" style="display: flex;">
+                    <p id="next_update">下次更新時間 Next update:04:58:09 PM</p>
+                </div>
+                <div id="ticket_div" class="flex flex-row items-center mt-8 text-xs text-gray-800"
+                    style="display: none;">
+                    <p id="ticket_session_id">排隊號碼 Ticket Number: 9308943c-d40f-4f73-9d43-4a925f79ad33</p>
+                </div>
+            </div>
+        </div>
+    </div><iframe height="1" width="1"
+        style="position: absolute; top: 0px; left: 0px; border: none; visibility: hidden;"></iframe><iframe height="1"
+        width="1" style="position: absolute; top: 0px; left: 0px; border: none; visibility: hidden;"></iframe>
+</body>
+<script>
+
+    console.log("Reload finished");
+
+    const dateTime = new Date().toLocaleTimeString('en-US', {
+        hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true
+    })
+    document.getElementById('last_update').innerText = "Next update:" + dateTime;
+
+</script>
+
+</html>

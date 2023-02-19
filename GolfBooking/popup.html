@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="./popup.css" />
+</head>
+<style>
+  .mybutton {
+    width: 160px;
+    padding: 5px;
+    margin-top: 10px;
+  }
+</style>
+
+<body>
+  <div>
+    <input type="checkbox" id="debugmode" name="debugmode">
+    <label for="debugmode"> Debug</label><br>
+    <input type="checkbox" id="getroundtrip" name="getroundtrip">
+    <label for="getroundtrip"> Calculate Round Trip</label><br>
+    <button class="mybutton" id="btTest">Test</button><br>
+    <button class="mybutton" id="btRounTrip">Get RTT</button><br>
+    <button class="mybutton" id="btAddTabs">Create Tabs</button><br>
+    <button class="mybutton" id="btDeleteTabs">Delete Tabs</button><br>
+    <button class="mybutton" id="btRefresh">Refresh All</button><br>
+    <button class="mybutton" id="btAutoLogin">AutoBook</button><br><br>
+    <input id="boxInputLag" value="1000"></input>
+  </div>
+  <p id= "labelStatus"></p><br>
+  <p id="ksclastrefresh"></p><br>
+  <ul id="timelist"></ul>
+  <p id= "statusMessage"></p>
+  <script src="./popup.js" type="module"></script>
+</body>
+
+</html>
