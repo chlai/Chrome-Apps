@@ -116,29 +116,10 @@ chrome.contextMenus.onClicked.addListener(async function (info, tab) {
         autoBookingWS();
     }
 });
-async function allRoundDataExtraction(tab) {
+async function allRoundDataExtraction(alltabs, tab) {
     console.log('Start tab walk');
     //try to use promise
-
-    var alltabs = await chrome.tabs.query(queryInfo);
-    if (tabsInAction == 0 && alltabs != null) {
-        tabsInAction = alltabs.length;
-    }
-    while (alltabs == null || alltabs.length < tabsInAction) {
-        await delay(200);
-        await chrome.tabs.query(queryInfo);
-        console.log("Tabs query fail!");
-    }
-    if (alltabs.length == 0) {
-        console.log("Timing issue, wait delay for 200ms");
-        await delay(200);
-        alltabs = await chrome.tabs.query(queryInfo);
-        if (alltabs.length == 0) {
-            console.log('Golf booking not ready, you have to log in and create tabs');
-            return;
-        }
-    }
-
+    tabsInAction = alltabs.length;
     var ind = alltabs.findIndex(x => x.active);
     if (tab == null) {
         console.log('Tabs is null in allRoundDataExtraction');
@@ -149,6 +130,7 @@ async function allRoundDataExtraction(tab) {
     for (const t of alltabs) {
         onCommittedTimeStamp.push({ id: t.id, timestamp: 0 });
     }
+    //active tab may not be the 1st element
     var ind = onCommittedTimeStamp.findIndex(data => data.id === tab.id);
     tabStart = onCommittedTimeStamp[0].id;
     if (ind != 0) {
@@ -157,6 +139,8 @@ async function allRoundDataExtraction(tab) {
         await getTabLoadFinish(tab);
         await tabWalk(tab);
     }
+    //tab change call will push data to lastupdate
+    //wait until it is full loaded
     while (lastupdate.length < tabsInAction) {
         await delay(100);
     }
@@ -247,8 +231,8 @@ function setPush(arr, ele) {
 
 
 
-async function tabWalk(ctab) {
-    var tabsx = await chrome.tabs.query(queryInfo);
+async function tabWalk(tabsx, ctab) {
+   
     var ind = tabsx.findIndex(tab => tab.id === ctab.id);
     // console.log('tab walk id: ' + ind);
     ind = ind < 0 || ind == tabsx.length - 1 ? 0 : ind + 1;
@@ -280,18 +264,16 @@ async function checkTimeStamp(){
     return performance.timing.domComplete;
 }
 
-async function refreshAllTabsWait() {
+async function getAllTabs(){
+
+}
+
+async function refreshAllTabsWait(tabs) {
     //switch to last tab
     clearArrays();
     report = "";
     console.log('Refresh All Tabs');
     cycleTime.refresh = new Date().getTime();
-    var timestamp = -1;
-    var tabs = await chrome.tabs.query(queryInfo);
-    if(tabs==null || tabs.length==0){
-        console.log("Fail to refresh all tabs");
-        return false;
-    }
     golfTabs = tabs;
     tabsInAction = tabs.length;
     await chrome.tabs.update(tabs[tabs.length - 1].id, { active: true });
@@ -315,6 +297,7 @@ async function refreshAllTabsWait() {
         //console.log("Check time: " + checktime);
     }
     await chrome.tabs.update(tabs[0].id, { active: true });
+    await delay(10);
     await allRoundDataExtraction(tabs[0]);
     return true;
 }
@@ -333,8 +316,10 @@ function getRecommendation() {
 
 async function autoBookingWS() {
     //check reload time
+    // var t500 = new Date().setHours(17, 0, 0, 0);
+    // var t930 = new Date().setHours(9, 30, 0, 0);
     var t500 = new Date().setHours(17, 0, 0, 0);
-    var t930 = new Date().setHours(9, 30, 0, 0);
+    var t930 = new Date().setHours(9, 40, 0, 0);
     var nowTime = new Date().getTime();
     var booking = t930;
     if (nowTime > t930) booking = t500;
@@ -407,7 +392,15 @@ async function autoBookingWS() {
 }
 
 
-
+async function getAllTabs(){
+    return chrome.tabs.query({}, tabs=>{
+        var result = [];
+        for(var t of tabs){
+            if(t.url.match(/kscgolf|green/i) != null) result.push(t);
+        }
+        return result;
+    });
+}
 
 
 
