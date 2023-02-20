@@ -47,16 +47,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, reply) => {
     }
     return true;
 });
-//event for tab autmation
-//call back when a tab is reloaded
-// chrome.webNavigation.onCommitted.addListener(async (details) => {
-//     if (["reload", "link", "typed", "generated"].includes(details.transitionType) &&
-//         details.url.match(/kscgolf|green/) != null) {
-//         console.log("onCommitted: " + details.timeStamp);
-//         setPush(onCommittedTimeStamp, { id: details.tabId, timestamp: details.timeStamp });
-//         setPush(codeAfterReload, { id: details.tabId, timestamp: new Date().getTime() });
-//     }
-// });
+
 var tabStart = 0;
 chrome.tabs.onActivated.addListener(async (details) => {
     if (onCommittedTimeStamp.length > 0 && tabStart > 0) {
@@ -76,42 +67,28 @@ chrome.tabs.onActivated.addListener(async (details) => {
 chrome.commands.onCommand.addListener(async (command) => {
     test = (arg) => {
         var bodyhead = document.getElementsByTagName('Body')[0];
-        bodyhead.innerHTML = '<H2>' + arg + '</H2>';
+        bodyhead.innerHTML = '<H3>' + arg + '</H3>';
     };
-    var alltabs = await chrome.tabs.query(queryInfo);
+    var atab = await getAllTabs();
+    var alltabs = atab.tabs;
     var ind = alltabs.findIndex(x => x.active);
-
+    
     var docTime = await chrome.scripting.executeScript({
         target: { tabId: alltabs[ind].id },
         func: test,
         args: [report]
     });
-
-
-    // if (command == 'tabwalkthrough') {
-    //     // var tabsx = await chrome.tabs.query({active:true, currentWindow:true});
-    //     var alltabs = await chrome.tabs.query(queryInfo);
-    //     var ind = alltabs.findIndex(x => x.active);
-    //     await getTabLoadFinish(alltabs[ind]);
-    //     await tabWalk(alltabs[ind]);
-    // }
 });
 chrome.contextMenus.onClicked.addListener(async function (info, tab) {
     if (info.menuItemId == 'tabwalkright') {
         tabStart = 0;
-        // await refreshAllTab();
-        // chrome.tabs.query({}, function (tabs) {
-        //     // tabs is an array of tab objects 
-        //     report = "";
-        //     allRoundDataExtraction(tab);
-        // });
-        await refreshAllTabsWait();
-     
-
+        var atabs = await getAllTabs();
+        await refreshAllTabsWait(atabs.tabs);
     } else if (info.menuItemId == 'autoTabWalk') {
         report = "";
-
-        await allRoundDataExtraction(tab);
+        tabStart = 0;
+        var atabs = await getAllTabs();
+        await allRoundDataExtraction(atabs.tabs, atabs.currentTab);
     } else if (info.menuItemId == 'autoBook') {
         autoBookingWS();
     }
@@ -174,7 +151,6 @@ async function addToClipboard(value) {
         reasons: [chrome.offscreen.Reason.CLIPBOARD],
         justification: 'Write text to the clipboard.',
     });
-
     // Now that we have an offscreen document, we can dispatch the
     // message.
     chrome.runtime.sendMessage({
@@ -231,12 +207,15 @@ function setPush(arr, ele) {
 
 
 
-async function tabWalk(tabsx, ctab) {
-   
-    var ind = tabsx.findIndex(tab => tab.id === ctab.id);
+async function tabWalk( ctab) {
+    if(golfTabs== null || golfTabs.length==0){
+        var atabs = await getAllTabs();
+        golfTabs = atabs.tabs;
+    }
+    var ind = golfTabs.findIndex(tab => tab.id === ctab.id);
     // console.log('tab walk id: ' + ind);
-    ind = ind < 0 || ind == tabsx.length - 1 ? 0 : ind + 1;
-    chrome.tabs.update(tabsx[ind].id, { active: true });
+    ind = ind < 0 || ind == golfTabs.length - 1 ? 0 : ind + 1;
+    chrome.tabs.update(golfTabs[ind].id, { active: true });
     return ind;
 }//, "link", "typed", "generated"
 
@@ -245,8 +224,9 @@ async function refreshAllTab() {
     report = "";
     console.log('Refresh All Tabs');
     cycleTime.refresh = new Date().getTime();
+
     var tabs = await chrome.tabs.query(queryInfo);
-    if(tabs==null || tabs.length==0){
+    if (tabs == null || tabs.length == 0) {
         console.log("Fail to refresh all tabs");
         return false;
     }
@@ -260,11 +240,11 @@ async function refreshAllTab() {
     await delay(500);
 }
 
-async function checkTimeStamp(){
+async function checkTimeStamp() {
     return performance.timing.domComplete;
 }
 
-async function getAllTabs(){
+async function getAllTabs() {
 
 }
 
@@ -298,7 +278,7 @@ async function refreshAllTabsWait(tabs) {
     }
     await chrome.tabs.update(tabs[0].id, { active: true });
     await delay(10);
-    await allRoundDataExtraction(tabs[0]);
+    await allRoundDataExtraction( tabs, tabs[0]);
     return true;
 }
 
@@ -318,16 +298,16 @@ async function autoBookingWS() {
     //check reload time
     // var t500 = new Date().setHours(17, 0, 0, 0);
     // var t930 = new Date().setHours(9, 30, 0, 0);
-    var t500 = new Date().setHours(17, 0, 0, 0);
-    var t930 = new Date().setHours(9, 40, 0, 0);
+    var t500 = new Date().setHours(16, 6, 0, 0);
+    var t930 = new Date().setHours(9, 30, 0, 0);
     var nowTime = new Date().getTime();
     var booking = t930;
     if (nowTime > t930) booking = t500;
-    var tab = null;
-    chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-        tab = tabs[0];
-    });
-    await refreshAllTabsWait();
+     
+    var tabq = await getAllTabs();
+    golfTabs = tabq.tabs;
+    var tab = tabq.currentTab;
+    await refreshAllTabsWait(golfTabs);
     var speed = recommendation + 3;
     nowTime = new Date().getTime();
     var tooEarly = Math.abs(booking - nowTime);
@@ -336,9 +316,9 @@ async function autoBookingWS() {
         console.log("Official booking target time: " + new Date(booking) + "  " + booking);
         booking = new Date().setMilliseconds(0) + 15000;
         speed = 13000;
-        if(recommendation>5000){
+        if (recommendation > 5000) {
             booking = new Date().setMilliseconds(0) + 20000;
-        speed = 18000;
+            speed = 18000;
         }
     }
     bookingTime = booking;
@@ -350,8 +330,8 @@ async function autoBookingWS() {
     console.log("1st reload after: " + reloadStart / 1000.0);
     // setTimeout(refreshAllTab, reloadStart);
     setTimeout(() => {
-        Promise.resolve(refreshAllTabsWait()).then(result => {
-            if(!result){
+        Promise.resolve(refreshAllTabsWait(tabq.tabs)).then(result => {
+            if (!result) {
                 console.log("AutoBooking will  be fail!!!");
             }
             var timeout = bookingTime - new Date().getTime() - recommendation;
@@ -360,7 +340,7 @@ async function autoBookingWS() {
                 console.log("Recommendation: " + recommendation)
                 return;
             } else {
-                setTimeout(refreshAllTabsWait, timeout);
+                setTimeout(refreshAllTabsWait, timeout, tabq.tabs);
                 console.log('Booking target: ' + new Date(bookingTime));
             }
         });
@@ -393,14 +373,15 @@ async function autoBookingWS() {
 
 
 async function getAllTabs(){
-    return chrome.tabs.query({}, tabs=>{
-        var result = [];
+    let atabs = await chrome.tabs.query({ active:true});
+    let tabs = await chrome.tabs.query({ });
+    var windowid = atabs[0].windowId;
+    var result = [];
         for(var t of tabs){
-            if(t.url.match(/kscgolf|green/i) != null) result.push(t);
+            if(t.url.match(/kscgolf|green/i) != null && t.windowId==windowid) result.push(t);
         }
-        return result;
-    });
+        golfTabs = result;
+    return {tabs: result, currentTab: atabs[0]};
 }
-
 
 
