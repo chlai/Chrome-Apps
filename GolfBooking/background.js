@@ -72,7 +72,7 @@ chrome.commands.onCommand.addListener(async (command) => {
     var atab = await getAllTabs();
     var alltabs = atab.tabs;
     var ind = alltabs.findIndex(x => x.active);
-    
+
     var docTime = await chrome.scripting.executeScript({
         target: { tabId: alltabs[ind].id },
         func: test,
@@ -207,8 +207,8 @@ function setPush(arr, ele) {
 
 
 
-async function tabWalk( ctab) {
-    if(golfTabs== null || golfTabs.length==0){
+async function tabWalk(ctab) {
+    if (golfTabs == null || golfTabs.length == 0) {
         var atabs = await getAllTabs();
         golfTabs = atabs.tabs;
     }
@@ -223,7 +223,7 @@ async function refreshAllTab() {
     clearArrays();
     report = "";
     console.log('Refresh All Tabs');
-    cycleTime.refresh = new Date().getTime();
+    cycleTime.refresh = Date.now();
 
     var tabs = await chrome.tabs.query(queryInfo);
     if (tabs == null || tabs.length == 0) {
@@ -244,16 +244,12 @@ async function checkTimeStamp() {
     return performance.timing.domComplete;
 }
 
-async function getAllTabs() {
-
-}
-
 async function refreshAllTabsWait(tabs) {
     //switch to last tab
     clearArrays();
     report = "";
     console.log('Refresh All Tabs');
-    cycleTime.refresh = new Date().getTime();
+    cycleTime.refresh = Date.now();
     golfTabs = tabs;
     tabsInAction = tabs.length;
     await chrome.tabs.update(tabs[tabs.length - 1].id, { active: true });
@@ -274,17 +270,16 @@ async function refreshAllTabsWait(tabs) {
             func: checkTimeStamp
         });
         checktime = result == null ? 0 : result[0].result;
-        //console.log("Check time: " + checktime);
     }
     await chrome.tabs.update(tabs[0].id, { active: true });
     await delay(10);
-    await allRoundDataExtraction( tabs, tabs[0]);
+    await allRoundDataExtraction(tabs, tabs[0]);
     return true;
 }
 
 function getRecommendation() {
-    if (lastupdate.length > 0) {
-        var midvalue = lastupdate[Math.round(lastupdate.length / 2)].connectStart;
+    if (lastupdate.length > 2) {
+        var midvalue = lastupdate[Math.round(6 * lastupdate.length / 10)].connectStart;
         recommendation = midvalue - cycleTime.refresh;
     } else {
         console.log('Warning: system unable provide recommenation. Default is used.');
@@ -293,23 +288,53 @@ function getRecommendation() {
     console.log("Recommendation:  " + recommendation);
 }
 
+async function warningMessage(mes){
+    var act = await getAllTabs();
+    mess = (arg) => {
+        alert(arg);
+    };
+    var docTime = await chrome.scripting.executeScript({
+        target: { tabId: act.currentTab.id },
+        func: mess,
+        args: [mes]
+    });
+}
+
+function setBookingTime(){
+    const t500 = new Date().setHours(17, 0, 0, 0);
+    const t930 = new Date().setHours(9, 30, 0, 0);
+    var nowTime = Date.now();
+    var booking = t930;
+    if (nowTime > t930) booking = t500;
+    nowTime = Date.now();
+    var tooEarly = Math.abs(booking - nowTime);
+    if (tooEarly > (10 * 60 * 1000) || nowTime > booking) {
+        console.log('Not in booking range, system run in debug mode');
+        console.log("Official booking target time: " + new Date(booking) + "  " + booking);
+        console.log()
+        booking = new Date().setMilliseconds(0) + 20000;
+    }
+    return booking;
+}
+
+
 
 async function autoBookingWS() {
     //check reload time
     // var t500 = new Date().setHours(17, 0, 0, 0);
     // var t930 = new Date().setHours(9, 30, 0, 0);
-    var t500 = new Date().setHours(16, 6, 0, 0);
+    var t500 = new Date().setHours(17, 0, 0, 0);
     var t930 = new Date().setHours(9, 30, 0, 0);
-    var nowTime = new Date().getTime();
+    var nowTime = Date.now();
     var booking = t930;
     if (nowTime > t930) booking = t500;
-     
+
     var tabq = await getAllTabs();
     golfTabs = tabq.tabs;
     var tab = tabq.currentTab;
     await refreshAllTabsWait(golfTabs);
     var speed = recommendation + 3;
-    nowTime = new Date().getTime();
+    nowTime = Date.now();
     var tooEarly = Math.abs(booking - nowTime);
     if (tooEarly > (10 * 60 * 1000) || nowTime > booking) {
         console.log('Not in booking range, system run in debug mode');
@@ -320,6 +345,8 @@ async function autoBookingWS() {
             booking = new Date().setMilliseconds(0) + 20000;
             speed = 18000;
         }
+        await warningMessage("Debug mode!!!");
+        // await delay(2000);
     }
     bookingTime = booking;
     console.log("Booking target time: " + new Date(booking) + "  " + booking);
@@ -334,54 +361,41 @@ async function autoBookingWS() {
             if (!result) {
                 console.log("AutoBooking will  be fail!!!");
             }
-            var timeout = bookingTime - new Date().getTime() - recommendation;
+            var timeout = bookingTime - Date.now() - recommendation;
             if (timeout < 0) {
                 console.log("Fail in auto booking, refresh time out!");
-                console.log("Recommendation: " + recommendation)
-                return;
-            } else {
-                setTimeout(refreshAllTabsWait, timeout, tabq.tabs);
-                console.log('Booking target: ' + new Date(bookingTime));
+                console.log("Rebuild will tabe action now");
+                timeout = 10;
             }
+            setTimeout((x) => {
+                bookingTime = 0;
+                refreshAllTabsWait(x);
+            }, timeout, tabq.tabs);
+            console.log('Booking target: ' + new Date(bookingTime));
         });
     }, reloadStart);
-
-
-
     tooEarly = tooEarly + 4000;
-    //suppose reload all require 5 seconds
-    // var walktab = bookingTime - new Date().getTime() - recommendation - 2000;
-    // if (walktab < 0) {
-    //     console.log("Time out for walktab");
-    //     return;
-    // }
-    // console.log("Tab walk schedule at: " + walktab / 1000.0);
-    // setTimeout(() => {
-    //     Promise.resolve(allRoundDataExtraction(tab)).then(result => {
-    //         var timeout = bookingTime - new Date().getTime() - recommendation;
-    //         if (timeout < 0) {
-    //             console.log("Fail in auto booking, refresh time out!");
-    //             return;
-    //         } else {
-    //             setTimeout(refreshAllTab, timeout);
-    //             console.log('Booking target: ' + new Date(bookingTime));
-    //         }
-    //     });
-    // }, walktab);
     console.log('All set, good luck!');
+
 }
 
-
-async function getAllTabs(){
-    let atabs = await chrome.tabs.query({ active:true});
-    let tabs = await chrome.tabs.query({ });
+function setCountDownBadge() {
+    var cd = Math.round((Date.now() - bookingTime) / 100) / 10;
+    chrome.action.setBadgeText({
+        text: cd,
+    });
+    setTimeout(setCountDownBadge, 50)
+}
+async function getAllTabs() {
+    let atabs = await chrome.tabs.query({ active: true });
+    let tabs = await chrome.tabs.query({});
     var windowid = atabs[0].windowId;
     var result = [];
-        for(var t of tabs){
-            if(t.url.match(/kscgolf|green/i) != null && t.windowId==windowid) result.push(t);
-        }
-        golfTabs = result;
-    return {tabs: result, currentTab: atabs[0]};
+    for (var t of tabs) {
+        if (t.url.match(/kscgolf|green/i) != null && t.windowId == windowid) result.push(t);
+    }
+    golfTabs = result;
+    return { tabs: result, currentTab: atabs[0] };
 }
 
 
