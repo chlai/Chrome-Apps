@@ -248,17 +248,18 @@ async function refreshAllTabsWait(tabs) {
     //switch to last tab
     clearArrays();
     report = "";
-    console.log('Refresh All Tabs');
+
     cycleTime.refresh = Date.now();
     golfTabs = tabs;
     tabsInAction = tabs.length;
+    console.log('Before script: ' + Date.now());
     await chrome.tabs.update(tabs[tabs.length - 1].id, { active: true });
     var result = await chrome.scripting.executeScript({
         target: { tabId: tabs[tabs.length - 1].id },
         func: checkTimeStamp
     });
     timestamp = result[0].result;
-    console.log("TimeStamp:  " + timestamp);
+    console.log("Refresh At TimeStamp:  " + Date.now());
     for (let tab of tabs) {
         chrome.tabs.reload(tab.id);
     }
@@ -288,7 +289,7 @@ function getRecommendation() {
     console.log("Recommendation:  " + recommendation);
 }
 
-async function warningMessage(mes){
+async function warningMessage(mes) {
     var act = await getAllTabs();
     mess = (arg) => {
         alert(arg);
@@ -300,7 +301,7 @@ async function warningMessage(mes){
     });
 }
 
-function setBookingTime(){
+function setBookingTime() {
     const t500 = new Date().setHours(17, 0, 0, 0);
     const t930 = new Date().setHours(9, 30, 0, 0);
     var nowTime = Date.now();
@@ -374,17 +375,22 @@ async function autoBookingWS() {
             console.log('Booking target: ' + new Date(bookingTime));
         });
     }, reloadStart);
-    tooEarly = tooEarly + 4000;
+    setCountDownBadge();
     console.log('All set, good luck!');
 
 }
 
 function setCountDownBadge() {
-    var cd = Math.round((Date.now() - bookingTime) / 100) / 10;
-    chrome.action.setBadgeText({
-        text: cd,
-    });
-    setTimeout(setCountDownBadge, 50)
+    if (bookingTime == 0) {
+        chrome.action.setBadgeText({text:''});
+    } else {
+        var cd = (Math.round((bookingTime - Date.now()) / 100) / 10).toString();
+        chrome.action.setBadgeText({
+            text: cd,
+        });
+        setTimeout(setCountDownBadge, 50)
+    }
+    
 }
 async function getAllTabs() {
     let atabs = await chrome.tabs.query({ active: true });
