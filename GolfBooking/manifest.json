@@ -1,6 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Golf Booking Tool",
+  "description":"Booking Tool for KSC golf club",
   "version": "1.0",
   "icons": {
     "16": "images/icon-16.png",
