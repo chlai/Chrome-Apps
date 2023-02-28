@@ -280,7 +280,7 @@ async function refreshAllTabsWait(tabs) {
 
 function getRecommendation() {
     if (lastupdate.length > 2) {
-        var midvalue = lastupdate[Math.round(6 * lastupdate.length / 10)].connectStart;
+        var midvalue = lastupdate[Math.round(5 * lastupdate.length / 10)].connectStart;
         recommendation = midvalue - cycleTime.refresh;
     } else {
         console.log('Warning: system unable provide recommenation. Default is used.');
@@ -333,20 +333,14 @@ async function autoBookingWS() {
     var tabq = await getAllTabs();
     golfTabs = tabq.tabs;
     var tab = tabq.currentTab;
-    await refreshAllTabsWait(golfTabs);
-    var speed = recommendation + 3;
+    var speed = 12000;
     nowTime = Date.now();
     var tooEarly = Math.abs(booking - nowTime);
     if (tooEarly > (10 * 60 * 1000) || nowTime > booking) {
         console.log('Not in booking range, system run in debug mode');
         console.log("Official booking target time: " + new Date(booking) + "  " + booking);
         booking = new Date().setMilliseconds(0) + 15000;
-        speed = 13000;
-        if (recommendation > 5000) {
-            booking = new Date().setMilliseconds(0) + 20000;
-            speed = 18000;
-        }
-        await warningMessage("Debug mode!!!");
+        warningMessage("Debug mode!!!");
         // await delay(2000);
     }
     bookingTime = booking;
