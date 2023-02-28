@@ -393,15 +393,19 @@ function setCountDownBadge() {
     
 }
 async function getAllTabs() {
-    let atabs = await chrome.tabs.query({ active: true });
+    let atabs = await chrome.tabs.query({ active: true});
+    let activeTab = null; 
+    for (var t of atabs) {
+        if (t.url.match(/kscgolf|green/i) != null) activeTab = t;
+    }
     let tabs = await chrome.tabs.query({});
-    var windowid = atabs[0].windowId;
+    var windowid = activeTab.windowId;
     var result = [];
     for (var t of tabs) {
         if (t.url.match(/kscgolf|green/i) != null && t.windowId == windowid) result.push(t);
     }
     golfTabs = result;
-    return { tabs: result, currentTab: atabs[0] };
+    return { tabs: result, currentTab:activeTab };
 }
 
 
