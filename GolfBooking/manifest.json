@@ -25,7 +25,8 @@
     "activeTab",
     "storage",
     "contextMenus",
-    "webNavigation"
+    "webNavigation",
+    "system.display"
   ],
   "commands": {
     "tabwalkthrough": {

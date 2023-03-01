@@ -44,6 +44,13 @@ chrome.runtime.onMessage.addListener(async (request, sender, reply) => {
     } else if (request.command == "passrefresh") {
         console.log('Refresh all start at:' + new Date(request.refreshat) + "  " + request.refreshat);
         cycleTime.refresh = request.refreshat;
+        if (request.currentTab > 0) {
+            var atabs = await getAllTabs();
+            await allRoundDataExtraction(atabs.tabs, atabs.currentTab);
+            getRecommendation();
+            reply({ delay: recommendation });
+        }
+        //should open tab here
     }
     return true;
 });
@@ -376,7 +383,7 @@ async function autoBookingWS() {
 
 function setCountDownBadge() {
     if (bookingTime == 0) {
-        chrome.action.setBadgeText({text:''});
+        chrome.action.setBadgeText({ text: '' });
     } else {
         var cd = (Math.round((bookingTime - Date.now()) / 100) / 10).toString();
         chrome.action.setBadgeText({
@@ -384,11 +391,11 @@ function setCountDownBadge() {
         });
         setTimeout(setCountDownBadge, 50)
     }
-    
+
 }
 async function getAllTabs() {
-    let atabs = await chrome.tabs.query({ active: true});
-    let activeTab = null; 
+    let atabs = await chrome.tabs.query({ active: true });
+    let activeTab = null;
     for (var t of atabs) {
         if (t.url.match(/kscgolf|green/i) != null) activeTab = t;
     }
@@ -399,7 +406,7 @@ async function getAllTabs() {
         if (t.url.match(/kscgolf|green/i) != null && t.windowId == windowid) result.push(t);
     }
     golfTabs = result;
-    return { tabs: result, currentTab:activeTab };
+    return { tabs: result, currentTab: activeTab };
 }
 
 

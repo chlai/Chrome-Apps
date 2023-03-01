@@ -25,14 +25,14 @@ var localCookies = document.cookie;
 //set default valuse
 if(!localCookies.includes('=')){
    document.cookie='debugmode=false';
-   document.cookie='useroundtrip=false';
+   document.cookie='tabwalkcheckbox=false';
    document.cookie='delay=500';
 } else {
    if(localCookies.includes('debugmode=true')){
     document.getElementById('debugmode').checked=true;
    }
-   if(localCookies.includes('useroundtrip=true')){
-    document.getElementById('getroundtrip').checked=true;
+   if(localCookies.includes('tabwalkcheckbox=true')){
+    document.getElementById('tabwalkcheckbox').checked=true;
    }
    document.getElementById('boxInputLag').value=getCookie('delay');
 }
@@ -54,11 +54,11 @@ document.getElementById('debugmode').addEventListener('change',()=>{
   }
 });
  
-document.getElementById('getroundtrip').addEventListener("change", ()=>{
-  if(document.getElementById('getroundtrip').checked){
-    document.cookie='useroundtrip=true';
+document.getElementById('tabwalkcheckbox').addEventListener("change", ()=>{
+  if(document.getElementById('tabwalkcheckbox').checked){
+    document.cookie='tabwalkcheckbox=true';
   }else {
-    document.cookie='useroundtrip=false';
+    document.cookie='tabwalkcheckbox=false';
   }
 });
 document.getElementById("btTest").addEventListener("click", async () => {
@@ -191,8 +191,9 @@ async function removeAllGolfTabs() {
 async function refreshAllTab() {
   refreshStart = new Date().getTime();
   clearPage();
+  var currentTabId =0;
   chrome.tabs.query({ currentWindow: true }, function (tabx) { /* blah */
-    var urlname = currentTab[0].url;
+    currentTabId = currentTab[0].id;
     tabx.forEach(async tab => {
       if (tab.url.includes('kscgolf') || tab.url.includes('green')) {
         chrome.tabs.reload(tab.id);
@@ -203,7 +204,10 @@ async function refreshAllTab() {
   var lt = await getPerformanceLoadFinish();
   document.getElementById("statusMessage").innerText = "Refresh At: " + new Date(refreshStart).toString() + " -- " + refreshStart;
   document.getElementById("labelStatus").innerText = "Refresh start:" + refreshStart + "  PT Last update : " + lt + "   RTT: " + Math.round(lt - refreshStart);
-  await chrome.runtime.sendMessage({ command: "passrefresh", refreshat: refreshStart });
+  if (!document.getElementById('tabwalkcheckbox').checked) {
+    currentTabId=0;
+  }
+  await chrome.runtime.sendMessage({ command: "passrefresh", refreshat: refreshStart,currentTab: currentTabId});
 }
 async function getPerformanceLoadFinish() {
   var docTime = await chrome.scripting.executeScript({
