@@ -62,7 +62,8 @@ document.getElementById('tabwalkcheckbox').addEventListener("change", () => {
   }
 });
 document.getElementById("btAutoLoginOnCourse").addEventListener("click", async () => {
-  var checktabs = getGolfTabs();
+
+  var checktabs = await getGolfTabs();
   if(checktabs.length<3) {
     addTabs();
     await delay(500);
@@ -183,14 +184,17 @@ function clearPage() {
 }
 
 async function getGolfTabs() {
+  let atabs = await chrome.tabs.query({ active: true });
+  let activeTab = null;
+  for (var t of atabs) {
+      if (t.url.match(/kscgolf|green/i) != null) activeTab = t;
+  }
+  let tabs = await chrome.tabs.query({});
+  var windowid = activeTab.windowId;
   var result = [];
-  chrome.tabs.query({ currentWindow: true }, (tabs) => {
-    var len = tabs.length;
-    for (let k = 0; k < len; k++) {
-      if (tabs[k].url.match(/kscgolf|green/) != null)
-        result.push(tabs[k]);
-    }
-  });
+  for (var t of tabs) {
+      if (t.url.match(/kscgolf|green/i) != null && t.windowId == windowid) result.push(t);
+  }
   return result;
 }
 

@@ -17,7 +17,7 @@ var lastupdate = [];
 var report = "";
 const delay = ms => new Promise(res => setTimeout(res, ms));
 const compareTime = (a, b) => a.timestamp - b.timestamp;
-
+var bRemoveTabs = false;
 chrome.runtime.onInstalled.addListener(() => {
     chrome.contextMenus.create({
         id: "tabwalkright",
@@ -51,9 +51,10 @@ chrome.runtime.onMessage.addListener(async (request, sender, reply) => {
             reply({ delay: recommendation });
         }
         //should open tab here
-    }else if(request.command =='playbook'){
+    } else if (request.command == 'playbook') {
         //rebook
         await delay(500);
+        bRemoveTabs = true;
         autoBookingWS();
     }
     return true;
@@ -381,10 +382,26 @@ async function autoBookingWS() {
         });
     }, reloadStart);
     setCountDownBadge();
+    if (bRemoveTabs) {
+        setTimeout(removeAllGolfTabsBG, bookingTime - Date.now()+1500);
+    }
+    bRemoveTabs = false;
     console.log('All set, good luck!');
 
 }
 
+async function removeAllGolfTabsBG() {
+    var alltab = await getAllTabs();
+    var currentTabId = alltab.currentTab.id;
+    var len = alltab.tabs.length;
+    if(len<2) return false;
+    for (var k = 1; k <= len; k++) {
+        if (alltab.tabs[len - k].id != currentTabId && alltab.tabs[len - k].url.match(/kscgolf|green/) != null)
+            chrome.tabs.remove(alltab.tabs[len - k].id);
+    }
+    chrome.tabs.reload(currentTabId);
+    return true;
+}
 function setCountDownBadge() {
     if (bookingTime == 0) {
         chrome.action.setBadgeText({ text: '' });
