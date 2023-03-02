@@ -67,10 +67,9 @@ document.getElementById("btAutoLoginOnCourse").addEventListener("click", async (
     addTabs();
     await delay(500);
   }
-  chrome.runtime.sendMessage({ command: "playbook", refreshat: refreshStart }, function (response) {
-    clearPage();
-    document.getElementById("statusMessage").innerText = "Booking started ..";
-  });
+  chrome.runtime.sendMessage({ command: "playbook", refreshat: refreshStart });
+  clearPage();
+  document.getElementById("statusMessage").innerText = "Booking started ..";
   //document.getElementById("ksclastrefresh").innerText = "Round Trip:" + Math.round(tt);
 });
 
