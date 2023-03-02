@@ -23,18 +23,18 @@ let dataStamp = new Date();
 var refreshStart = new Date().getTime();
 var localCookies = document.cookie;
 //set default valuse
-if(!localCookies.includes('=')){
-   document.cookie='debugmode=false';
-   document.cookie='tabwalkcheckbox=false';
-   document.cookie='delay=500';
+if (!localCookies.includes('=')) {
+  document.cookie = 'debugmode=false';
+  document.cookie = 'tabwalkcheckbox=false';
+  document.cookie = 'delay=500';
 } else {
-   if(localCookies.includes('debugmode=true')){
-    document.getElementById('debugmode').checked=true;
-   }
-   if(localCookies.includes('tabwalkcheckbox=true')){
-    document.getElementById('tabwalkcheckbox').checked=true;
-   }
-   document.getElementById('boxInputLag').value=getCookie('delay');
+  if (localCookies.includes('debugmode=true')) {
+    document.getElementById('debugmode').checked = true;
+  }
+  if (localCookies.includes('tabwalkcheckbox=true')) {
+    document.getElementById('tabwalkcheckbox').checked = true;
+  }
+  document.getElementById('boxInputLag').value = getCookie('delay');
 }
 let changeColor = document.getElementById("btTest");
 
@@ -42,31 +42,45 @@ chrome.storage.sync.get("color", ({ color }) => {
   changeColor.style.backgroundColor = color;
 });
 
-document.getElementById('boxInputLag').addEventListener('change',()=>{
-  document.cookie='delay='+document.getElementById('boxInputLag').value;
+document.getElementById('boxInputLag').addEventListener('change', () => {
+  document.cookie = 'delay=' + document.getElementById('boxInputLag').value;
 });
 
-document.getElementById('debugmode').addEventListener('change',()=>{
-  if(document.getElementById('debugmode').checked){
-    document.cookie='debugmode=true';
-  }else {
-    document.cookie='debugmode=false';
+document.getElementById('debugmode').addEventListener('change', () => {
+  if (document.getElementById('debugmode').checked) {
+    document.cookie = 'debugmode=true';
+  } else {
+    document.cookie = 'debugmode=false';
   }
 });
- 
-document.getElementById('tabwalkcheckbox').addEventListener("change", ()=>{
-  if(document.getElementById('tabwalkcheckbox').checked){
-    document.cookie='tabwalkcheckbox=true';
-  }else {
-    document.cookie='tabwalkcheckbox=false';
+
+document.getElementById('tabwalkcheckbox').addEventListener("change", () => {
+  if (document.getElementById('tabwalkcheckbox').checked) {
+    document.cookie = 'tabwalkcheckbox=true';
+  } else {
+    document.cookie = 'tabwalkcheckbox=false';
   }
 });
+document.getElementById("btAutoLoginOnCourse").addEventListener("click", async () => {
+  var checktabs = getGolfTabs();
+  if(checktabs.length<3) {
+    addTabs();
+    await delay(500);
+  }
+  chrome.runtime.sendMessage({ command: "playbook", refreshat: refreshStart }, function (response) {
+    clearPage();
+    document.getElementById("statusMessage").innerText = "Booking started ..";
+  });
+  //document.getElementById("ksclastrefresh").innerText = "Round Trip:" + Math.round(tt);
+});
+
 document.getElementById("btTest").addEventListener("click", async () => {
   console.log("button clicked!");
   chrome.runtime.sendMessage({ command: "getdelay", refreshat: refreshStart }, function (response) {
-    document.getElementById("boxInputLag").value =response.delay;
+    document.getElementById("boxInputLag").value = response.delay;
+    document.cookie = 'delay=' + response.delay;
   });
-   
+
   //document.getElementById("ksclastrefresh").innerText = "Round Trip:" + Math.round(tt);
 });
 document.getElementById("btRounTrip").addEventListener("click", async () => {
@@ -77,21 +91,23 @@ document.getElementById("btRounTrip").addEventListener("click", async () => {
   document.getElementById("statusMessage").innerText = "Round Trip:" + Math.round(tt);
   //suggested delay time for autobooking
   document.getElementById("boxInputLag").value = aiFactor + Math.round(tt);
-  document.cookie='delay='+document.getElementById("boxInputLag").value;
+  document.cookie = 'delay=' + document.getElementById("boxInputLag").value;
 });
 document.getElementById("btAddTabs").addEventListener("click", () => {
+  addTabs();
+});
+
+document.getElementById("btRefresh").addEventListener("click", refreshAllTab);
+document.getElementById("btDeleteTabs").addEventListener("click", removeAllGolfTabs);
+document.getElementById("btAutoLogin").addEventListener("click", autoBooking);
+function addTabs() {
   console.log(currentTab[0].url);
   // let queryOptions = { active: true, lastFocusedWindow: true };
   var currentURL = currentTab[0].url;
   for (var i = 0; i < noTab; i++) {
     chrome.tabs.create({ url: currentURL, active: false });
   }
-});
-
-document.getElementById("btRefresh").addEventListener("click", refreshAllTab);
-document.getElementById("btDeleteTabs").addEventListener("click", removeAllGolfTabs);
-document.getElementById("btAutoLogin").addEventListener("click", autoBooking);
-
+}
 // Get the cookie value by name
 function getCookie(name) {
   const regex = new RegExp(`(?:(?:^|.*;\\s*)${name}\\s*\\=\\s*([^;]*).*$)|^.*$`);
@@ -103,10 +119,10 @@ async function loadTime() {
   var b4reload = await getPerformanceLoadFinish();
   await chrome.tabs.reload(currentTab[0].id);
   var lt = await getPerformanceLoadFinish();
-  while(isNaN(lt) || lt == b4reload){
+  while (isNaN(lt) || lt == b4reload) {
     await delay(10);
     lt = await getPerformanceLoadFinish();
-    console.log("Test: "+ lt);
+    console.log("Test: " + lt);
   }
   return lt - nowTime;
 }
@@ -118,7 +134,7 @@ async function autoBooking() {
   var nowTime = new Date().getTime();
   var booking = t930;
   if (nowTime > t930) booking = t500;
-  
+
   var messbox = document.getElementById("statusMessage");
   messbox.innerText = "";
   if (document.getElementById('debugmode').checked) {
@@ -134,13 +150,13 @@ async function autoBooking() {
 
   var delaytime = parseInt(document.getElementById("boxInputLag").value);
   document.getElementById('labelStatus').innerText = "Booking Time: " + new Date(booking).toString() + " Queuing Start at: " + new Date().toString();
-  var countDown = booking -new Date().getTime();
-  messbox.innerText =countDown/1000.0;
-  while (countDown>0) {
+  var countDown = booking - new Date().getTime();
+  messbox.innerText = countDown / 1000.0;
+  while (countDown > 0) {
     messbox.innerText = messbox.innerText + '=';
-    if (messbox.innerText.length >40) messbox.innerText =countDown/1000.0;
+    if (messbox.innerText.length > 40) messbox.innerText = countDown / 1000.0;
     if ((booking - new Date().getTime()) < delaytime) {
-      refreshStart= new Date().getTime();
+      refreshStart = new Date().getTime();
       messbox.innerText = "Refresh At: " + new Date().toString() + "--" + refreshStart;
       chrome.tabs.query({ currentWindow: true }, function (tabx) { /* blah */
         tabx.forEach(async tab => {
@@ -167,6 +183,18 @@ function clearPage() {
   document.getElementById("statusMessage").innerText = "";
 }
 
+async function getGolfTabs() {
+  var result = [];
+  chrome.tabs.query({ currentWindow: true }, (tabs) => {
+    var len = tabs.length;
+    for (let k = 0; k < len; k++) {
+      if (tabs[k].url.match(/kscgolf|green/) != null)
+        result.push(tabs[k]);
+    }
+  });
+  return result;
+}
+
 async function removeAllGolfTabs() {
   clearPage();
   var url = currentTab[0].url;
@@ -183,7 +211,7 @@ async function removeAllGolfTabs() {
 async function refreshAllTab() {
   refreshStart = new Date().getTime();
   clearPage();
-  var currentTabId =0;
+  var currentTabId = 0;
   chrome.tabs.query({ currentWindow: true }, function (tabx) { /* blah */
     currentTabId = currentTab[0].id;
     tabx.forEach(async tab => {
@@ -197,17 +225,17 @@ async function refreshAllTab() {
   document.getElementById("statusMessage").innerText = "Refresh At: " + new Date(refreshStart).toString() + " -- " + refreshStart;
   document.getElementById("labelStatus").innerText = "Refresh start:" + refreshStart + "  PT Last update : " + lt + "   RTT: " + Math.round(lt - refreshStart);
   if (!document.getElementById('tabwalkcheckbox').checked) {
-    currentTabId=0;
+    currentTabId = 0;
   }
-  await chrome.runtime.sendMessage({ command: "passrefresh", refreshat: refreshStart,currentTab: currentTabId});
+  await chrome.runtime.sendMessage({ command: "passrefresh", refreshat: refreshStart, currentTab: currentTabId });
 }
 async function getPerformanceLoadFinish() {
   var docTime = await chrome.scripting.executeScript({
     target: { tabId: currentTab[0].id },
     func: getLoadFinishTime
-  }); 
+  });
   console.log("DocTime: " + docTime[0].result);
-  return docTime==null?0:parseInt(docTime[0].result);
+  return docTime == null ? 0 : parseInt(docTime[0].result);
 }
 
 async function getPerformanceLoadFinishOld() {
@@ -258,11 +286,11 @@ function getRTT() {
 
 async function getLoadFinishTime() {
   console.log("performance.timing.loadEventEnd: " + performance.timing.loadEventEnd);
- var counter=0;
-  while(performance.timing.loadEventEnd<=0) {
+  var counter = 0;
+  while (performance.timing.loadEventEnd <= 0) {
     await delay(10);
     counter++;
-    console.log("Wait.." + counter  );
+    console.log("Wait.." + counter);
   }
   return performance.timing.loadEventEnd;
 }
@@ -301,12 +329,12 @@ function getRTTByCount() {
   return rtt;
 }
 
-async function switchTab(ctab){
-  chrome.tabs.query({currentWindow: true}, tabs => {
-    var ind = tabs.findIndex(tab=>tab.id===ctab.id);
-    var nexttab = ind==tabs.length-1?tabs[0]: tabs[ind+1];
+async function switchTab(ctab) {
+  chrome.tabs.query({ currentWindow: true }, tabs => {
+    var ind = tabs.findIndex(tab => tab.id === ctab.id);
+    var nexttab = ind == tabs.length - 1 ? tabs[0] : tabs[ind + 1];
     chrome.tabs.update(nexttab.id, { active: true });
-    console.log("Tab id"+ ctab.id + "   Index: " + ind)
+    console.log("Tab id" + ctab.id + "   Index: " + ind)
     // tabs.forEach(tab => {
 
     // });

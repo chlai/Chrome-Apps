@@ -51,6 +51,10 @@ chrome.runtime.onMessage.addListener(async (request, sender, reply) => {
             reply({ delay: recommendation });
         }
         //should open tab here
+    }else if(request.command =='playbook'){
+        //rebook
+        await delay(500);
+        autoBookingWS();
     }
     return true;
 });
