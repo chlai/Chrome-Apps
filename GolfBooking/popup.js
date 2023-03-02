@@ -118,15 +118,7 @@ async function autoBooking() {
   var nowTime = new Date().getTime();
   var booking = t930;
   if (nowTime > t930) booking = t500;
-  if (document.getElementById('getroundtrip').checked) {
-    document.getElementById("statusMessage").innerText = "Please wait ..";
-    var rt1 = await loadTime();
-    var rt2 = await loadTime();
-    var rt3 = await loadTime();
-    rt1 = (rt1 + rt2 + rt3) / 3;
-    document.getElementById("boxInputLag").value = aiFactor + Math.round(rt1);
-    document.cookie='delay='+document.getElementById("boxInputLag").value;
-  }
+  
   var messbox = document.getElementById("statusMessage");
   messbox.innerText = "";
   if (document.getElementById('debugmode').checked) {
