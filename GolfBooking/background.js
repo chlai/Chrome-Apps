@@ -54,7 +54,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, reply) => {
     } else if (request.command == 'playbook') {
         //rebook
         await delay(500);
-        bRemoveTabs = true;
+        // bRemoveTabs = true;
         autoBookingWS();
     }
     return true;
