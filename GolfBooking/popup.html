@@ -1,39 +1,106 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="./popup.css" />
+  <title>Golf Booking</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      min-width:300px;
+    }
+
+    .np {
+      margin: 7px;
+      font-size:smaller;
+    }
+
+    header,
+    main {
+      padding: 5px;
+      flex: 0 0 auto;
+    }
+
+    .footer {
+      background-color: gray;
+      color: white;
+      text-align: left;
+      height: 100px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: row;
+      flex: 1 1 auto;
+      overflow-y: hidden;
+    }
+
+    .left-column {
+      flex: 0.3 1 auto;
+      background-color: lightblue;
+      padding: 5px;
+    }
+
+    .right-column {
+      flex: 1 1 auto;
+      background-color: lightgreen;
+      padding: 5px;
+    }
+
+    .status {
+      background-color: yellow;
+      display: flex;
+      align-items: left;
+      justify-content: left;
+      height: 6rem;
+      text-align: left;
+    }
+
+    .mybutton {
+      width: 140px;
+      padding: 5px;
+      margin-top: 10px;
+    }
+  </style>
 </head>
-<style>
-  .mybutton {
-    width: 160px;
-    padding: 5px;
-    margin-top: 10px;
-  }
-</style>
 
 <body>
-  <div>
-    <input type="checkbox" id="debugmode" name="debugmode">
-    <label for="debugmode"> Debug</label><br>
-    <input type="checkbox" id="tabwalkcheckbox" name="tabwalkcheckbox">
-    <label for="tabwalkcheckbox"> Tab Walk</label><br>
-    <button class="mybutton" id="btTest">Test</button><br>
-    <button class="mybutton" id="btRounTrip">Get RTT</button><br>
-    <button class="mybutton" id="btAddTabs">Create Tabs</button><br>
-    <button class="mybutton" id="btDeleteTabs">Delete Tabs</button><br>
-    <button class="mybutton" id="btRefresh">Refresh All</button><br>
-    <button class="mybutton" id="btAutoLogin">AutoBook</button><br><br>
-    <button class="mybutton" id="btAutoLoginOnCourse">Play & Book</button><br><br>
-    <input id="boxInputLag" value="1000"></input>
+  <main>
+    <div class="container">
+      <div class="left-column">
+        <p>
+          <input type="checkbox" id="debugmode" name="debugmode">
+          <label for="debugmode"> Debug</label>
+        </p>
+        <p>
+          <input type="checkbox" id="tabwalkcheckbox" name="tabwalkcheckbox">
+          <label for="tabwalkcheckbox"> Tab Walk</label>
+        </p>
+        <button class="mybutton" id="btTest">Test</button><br>
+        <button class="mybutton" id="btRounTrip">Get RTT</button><br>
+        <button class="mybutton" id="btAddTabs">Create Tabs</button><br>
+        <button class="mybutton" id="btDeleteTabs">Delete Tabs</button><br>
+        <button class="mybutton" id="btRefresh">Refresh All</button><br>
+        <button class="mybutton" id="btAutoLogin">AutoBook</button><br>
+        <button class="mybutton" id="btAutoLoginOnCourse">Play & Book</button><br><br>
+        <input id="boxInputLag" value="1000"></input>
+      </div>
+      <div class="right-column">
+        <ul id="timelist">
+          <li></li>
+        </ul>
+      </div>
+    </div>
+  </main>
+  <div class="footer">
+    <p class='np' id="labelStatus">Golf booking</p>
+    <p class='np' id="ksclastrefresh">by Green Tech</p>
+    <p class='np' id="statusMessage">All rights reserved 2023</p>
   </div>
-  <p id= "labelStatus"></p><br>
-  <p id="ksclastrefresh"></p><br>
-  <ul id="timelist"></ul>
-  <p id= "statusMessage"></p>
+
   <script src="./popup.js" type="module"></script>
 </body>
 

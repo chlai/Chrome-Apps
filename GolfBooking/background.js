@@ -15,6 +15,7 @@ var codeAfterReload = [];
 var onCommittedTimeStamp = [];
 var lastupdate = [];
 var report = "";
+var timelistport="";
 const delay = ms => new Promise(res => setTimeout(res, ms));
 const compareTime = (a, b) => a.timestamp - b.timestamp;
 var bRemoveTabs = false;
@@ -32,7 +33,8 @@ chrome.runtime.onInstalled.addListener(() => {
         title: "Booking Auto"
     });
 });
-
+chrome.storage.sync.remove('tabwalker');
+chrome.storage.sync.remove('latency');
 
 
 //this callback is used to handle request from popup, it should be call before a full refresh
@@ -44,6 +46,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, reply) => {
     } else if (request.command == "passrefresh") {
         console.log('Refresh all start at:' + new Date(request.refreshat) + "  " + request.refreshat);
         cycleTime.refresh = request.refreshat;
+        timelistport="";
         if (request.currentTab > 0) {
             var atabs = await getAllTabs();
             await allRoundDataExtraction(atabs.tabs, atabs.currentTab);
@@ -98,6 +101,7 @@ chrome.contextMenus.onClicked.addListener(async function (info, tab) {
         await refreshAllTabsWait(atabs.tabs);
     } else if (info.menuItemId == 'autoTabWalk') {
         report = "";
+        timelistport="";
         tabStart = 0;
         var atabs = await getAllTabs();
         await allRoundDataExtraction(atabs.tabs, atabs.currentTab);
@@ -146,6 +150,8 @@ async function getTabLoadFinish(tab) {
         var sec = bt.lastupdate < 0 ? new Date(bt.connectStart).getSeconds() : 'x' + bt.lastupdate;
         var htmlstr = "<p>" + "Tab id " + tab.id + "  Connnect: " + bt.connectStart + "   Finish: " + bt.loadEventEnd + "  Sec: " + sec + "</p>\n";
         report = report + htmlstr;
+        timelistport = timelistport +"<li>" + sec +'.' + new Date(bt.loadEventEnd).getMilliseconds()+'</li>\n';
+        chrome.storage.sync.set({'tabwalker': timelistport});
         console.log("Tab id " + tab.id + "  Connnect: " + bt.connectStart + "   Finish: " + bt.loadEventEnd + "  Sec: " + sec);
         var ind = lastupdate.findIndex(data => data.id === tab.id);
         if (ind < 0) lastupdate.push({ 'id': tab.id, connectStart: bt.connectStart, 'loadfinish': bt.loadEventEnd, 'sec': sec });
@@ -234,6 +240,7 @@ async function tabWalk(ctab) {
 async function refreshAllTab() {
     clearArrays();
     report = "";
+    timelistport="";
     console.log('Refresh All Tabs');
     cycleTime.refresh = Date.now();
 
@@ -260,7 +267,7 @@ async function refreshAllTabsWait(tabs) {
     //switch to last tab
     clearArrays();
     report = "";
-
+    timelistport="";
     cycleTime.refresh = Date.now();
     golfTabs = tabs;
     tabsInAction = tabs.length;
@@ -378,7 +385,8 @@ async function autoBookingWS() {
                 bookingTime = 0;
                 refreshAllTabsWait(x);
             }, timeout, tabq.tabs);
-            console.log('Booking target: ' + new Date(bookingTime));
+            chrome.storage.sync.set({'latency': recommendation});
+            console.log('Booking target: ' + new Date(bookingTime) + "ms: " + new Date(bookingTime).getMilliseconds);
         });
     }, reloadStart);
     setCountDownBadge();
@@ -387,7 +395,6 @@ async function autoBookingWS() {
     }
     bRemoveTabs = false;
     console.log('All set, good luck!');
-
 }
 
 async function removeAllGolfTabsBG() {

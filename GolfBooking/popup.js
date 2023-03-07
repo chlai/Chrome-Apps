@@ -38,13 +38,19 @@ if (!localCookies.includes('=')) {
 }
 let changeColor = document.getElementById("btTest");
 
-chrome.storage.sync.get("color", ({ color }) => {
-  changeColor.style.backgroundColor = color;
-});
-
 document.getElementById('boxInputLag').addEventListener('change', () => {
   document.cookie = 'delay=' + document.getElementById('boxInputLag').value;
 });
+
+chrome.storage.sync.get("latency", ({latency}) => {
+  document.getElementById("statusMessage").innerText='Latency: ' +  latency+'ms';
+});
+chrome.storage.sync.get("tabwalker", ({tabwalker}) => {
+  if(typeof tabwalker === 'undefined'){
+
+  }else document.getElementById("timelist").innerHTML=tabwalker;
+});
+
 
 document.getElementById('debugmode').addEventListener('change', () => {
   if (document.getElementById('debugmode').checked) {
