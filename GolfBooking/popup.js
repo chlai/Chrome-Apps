@@ -215,6 +215,8 @@ async function removeAllGolfTabs() {
         chrome.tabs.remove(tabs[len - k].id);
     }
   });
+  document.getElementById('timelist').innerHTML="";
+  chrome.storage.sync.remove('tabwalker');
 }
 
 async function refreshAllTab() {
