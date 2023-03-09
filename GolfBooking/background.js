@@ -299,8 +299,11 @@ async function refreshAllTabsWait(tabs) {
 
 function getRecommendation() {
     if (lastupdate.length > 2) {
-        var midvalue = lastupdate[Math.round(5 * lastupdate.length / 10)].connectStart;
+        var sum = 0;
+        lastupdate.forEach(x=>sum=sum+x.connectStart);
+        var midvalue = sum/lastupdate.length;
         recommendation = midvalue - cycleTime.refresh;
+        chrome.storage.sync.set({'latency': recommendation});
     } else {
         console.log('Warning: system unable provide recommenation. Default is used.');
         recommendation = 7000;
@@ -378,7 +381,7 @@ async function autoBookingWS() {
             var timeout = bookingTime - Date.now() - recommendation;
             if (timeout < 0) {
                 console.log("Fail in auto booking, refresh time out!");
-                console.log("Rebuild will tabe action now");
+                console.log("Rebuild will take action now");
                 timeout = 10;
             }
             setTimeout((x) => {
