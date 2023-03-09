@@ -149,7 +149,7 @@ async function getTabLoadFinish(tab) {
         var sec = bt.lastupdate < 0 ? new Date(bt.connectStart).getSeconds() : 'x' + bt.lastupdate;
         var htmlstr = "<p>" + "Tab id " + tab.id + "  Connnect: " + bt.connectStart + "   Finish: " + bt.loadEventEnd + "  Sec: " + sec + "</p>\n";
         report = report + htmlstr;
-        timelistport = timelistport +"<li>" + sec +'.' + new Date(bt.loadEventEnd).getMilliseconds()+'</li>\n';
+        timelistport = timelistport +"<li>" + sec + ' s</li>\n';
         chrome.storage.sync.set({'tabwalker': timelistport});
         console.log("Tab id " + tab.id + "  Connnect: " + bt.connectStart + "   Finish: " + bt.loadEventEnd + "  Sec: " + sec);
         var ind = lastupdate.findIndex(data => data.id === tab.id);
@@ -242,7 +242,8 @@ async function refreshAllTab() {
     timelistport="";
     console.log('Refresh All Tabs');
     cycleTime.refresh = Date.now();
-
+    cycleTime.refresh = Date.now();
+    chrome.storage.sync.set({'refreshAt': cycleTime.refresh});
     var tabs = await chrome.tabs.query(queryInfo);
     if (tabs == null || tabs.length == 0) {
         console.log("Fail to refresh all tabs");
@@ -268,6 +269,7 @@ async function refreshAllTabsWait(tabs) {
     report = "";
     timelistport="";
     cycleTime.refresh = Date.now();
+    chrome.storage.sync.set({'refreshAt': cycleTime.refresh});
     golfTabs = tabs;
     tabsInAction = tabs.length;
     console.log('Before script: ' + Date.now());
@@ -307,6 +309,7 @@ function getRecommendation() {
         console.log("Recommendation Mean:  " + midbymean);
         recommendation = midvalue - cycleTime.refresh;
         recommendation = midbymean;
+        recommendation= Math.round(recommendation);
         chrome.storage.sync.set({'latency': recommendation});
     } else {
         console.log('Warning: system unable provide recommenation. Default is used.');

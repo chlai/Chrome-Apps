@@ -42,24 +42,35 @@ document.getElementById('boxInputLag').addEventListener('change', () => {
   document.cookie = 'delay=' + document.getElementById('boxInputLag').value;
 });
 
-chrome.storage.sync.get("latency", ({latency}) => {
-  document.getElementById("statusMessage").innerText='Latency: ' +  latency+'ms';
+chrome.storage.sync.get("latency", ({ latency }) => {
+  document.getElementById("statusMessage").innerText = 'Latency: ' + latency + 'ms';
 });
-chrome.storage.sync.get("tabwalker", ({tabwalker}) => {
-  if(typeof tabwalker === 'undefined'){
 
-  }else document.getElementById("timelist").innerHTML=tabwalker;
+//handle list display
+var ele = document.getElementById("timelist");
+
+chrome.storage.sync.get("tabwalker", ({ tabwalker }) => {
+  if (typeof tabwalker === 'undefined') {
+
+  } else ele.innerHTML = tabwalker;
 });
-chrome.storage.sync.get('bookingtime', ({bookingtime})=>{
-  if(typeof bookingtime === 'undefined'){
-
-  }else{
-    var ele = document.getElementById("timelist");
-    var bookdate = new Date(bookingtime);
-    var str= '<p>'+bookdate.getMinutes()+":" + bookdate.getSeconds()+'</p>';
+chrome.storage.sync.get('bookingtime', ({ bookingtime }) => {
+   
+  var bookdate =typeof bookingtime === 'undefined'?'undefined': new Date(bookingtime);
+  var str = typeof bookingtime === 'undefined'? "<p>Book At: xxx</p>":'<p> Book At: ' + bookdate.getMinutes() + ":" + bookdate.getSeconds() + '</p>';
+  chrome.storage.sync.get('refreshAt', ({ refreshAt }) => {
+    var valid = ! (typeof refreshAt === 'undefined');
+    if(valid){
+      var refdate = new Date(refreshAt);
+      str =str+ '<p>Refresh at: ' + refdate.getHours() + ":" + refdate.getMinutes() + ":" + refdate.getSeconds() + "." + refdate.getMilliseconds() + '</p>'
+    } else {
+      str = str + '<p>Refresh at: xxx</p>';
+    }
     ele.innerHTML = str+ele.innerHTML;
-  }
+  });
 });
+
+
 
 document.getElementById('debugmode').addEventListener('change', () => {
   if (document.getElementById('debugmode').checked) {
@@ -79,7 +90,7 @@ document.getElementById('tabwalkcheckbox').addEventListener("change", () => {
 document.getElementById("btAutoLoginOnCourse").addEventListener("click", async () => {
 
   var checktabs = await getGolfTabs();
-  if(checktabs.length<3) {
+  if (checktabs.length < 3) {
     addTabs();
     await delay(500);
   }
@@ -91,11 +102,12 @@ document.getElementById("btAutoLoginOnCourse").addEventListener("click", async (
 
 document.getElementById("btTest").addEventListener("click", async () => {
   console.log("button clicked!");
-  chrome.runtime.sendMessage({ command: "getdelay", refreshat: refreshStart }, function (response) {
-    document.getElementById("boxInputLag").value = response.delay;
-    document.cookie = 'delay=' + response.delay;
-  });
-
+  //special refresh with time rounded to nearest second;
+  var rft = new Date().setMilliseconds(0)+2000;
+  console.log( new Date() + "---"+   new Date(rft));
+  setTimeout(() => {
+    refreshAllTab();
+  }, rft - Date.now());
   //document.getElementById("ksclastrefresh").innerText = "Round Trip:" + Math.round(tt);
 });
 document.getElementById("btRounTrip").addEventListener("click", async () => {
@@ -202,13 +214,13 @@ async function getGolfTabs() {
   let atabs = await chrome.tabs.query({ active: true });
   let activeTab = null;
   for (var t of atabs) {
-      if (t.url.match(/kscgolf|green/i) != null) activeTab = t;
+    if (t.url.match(/kscgolf|green/i) != null) activeTab = t;
   }
   let tabs = await chrome.tabs.query({});
   var windowid = activeTab.windowId;
   var result = [];
   for (var t of tabs) {
-      if (t.url.match(/kscgolf|green/i) != null && t.windowId == windowid) result.push(t);
+    if (t.url.match(/kscgolf|green/i) != null && t.windowId == windowid) result.push(t);
   }
   return result;
 }
@@ -224,7 +236,7 @@ async function removeAllGolfTabs() {
         chrome.tabs.remove(tabs[len - k].id);
     }
   });
-  document.getElementById('timelist').innerHTML="";
+  document.getElementById('timelist').innerHTML = "";
   chrome.storage.sync.remove('tabwalker');
 }
 
@@ -232,6 +244,7 @@ async function refreshAllTab() {
   refreshStart = new Date().getTime();
   clearPage();
   var currentTabId = 0;
+  chrome.storage.sync.set({'refreshAt': Date.now()});
   chrome.tabs.query({ currentWindow: true }, function (tabx) { /* blah */
     currentTabId = currentTab[0].id;
     tabx.forEach(async tab => {
