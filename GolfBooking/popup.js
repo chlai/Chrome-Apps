@@ -62,7 +62,7 @@ chrome.storage.sync.get('bookingtime', ({ bookingtime }) => {
     var valid = ! (typeof refreshAt === 'undefined');
     if(valid){
       var refdate = new Date(refreshAt);
-      str =str+ '<p>Refresh at: ' + refdate.getHours() + ":" + refdate.getMinutes() + ":" + refdate.getSeconds() + "." + refdate.getMilliseconds() + '</p>'
+      str =str+ '<p>Refresh at: ' + refdate.getHours() + ":" + refdate.getMinutes() + ":" + (refdate.getSeconds() + refdate.getMilliseconds()/1000) + '</p>'
     } else {
       str = str + '<p>Refresh at: xxx</p>';
     }
@@ -105,9 +105,14 @@ document.getElementById("btTest").addEventListener("click", async () => {
   //special refresh with time rounded to nearest second;
   var rft = new Date().setMilliseconds(0)+2000;
   console.log( new Date() + "---"+   new Date(rft));
+  document.getElementById('timelist').innerHTML='<p>Click at: '+ new Date().getSeconds()+":"+
+  new Date().getMilliseconds()+'</p>' + 
+  '<p>Round to: '+ new Date(rft).getSeconds()+":"+
+  new Date(rft).getMilliseconds() + '</p>' ;
   setTimeout(() => {
     refreshAllTab();
   }, rft - Date.now());
+
   //document.getElementById("ksclastrefresh").innerText = "Round Trip:" + Math.round(tt);
 });
 document.getElementById("btRounTrip").addEventListener("click", async () => {
