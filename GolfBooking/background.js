@@ -41,7 +41,6 @@ chrome.storage.sync.remove('latency');
 //the timestamp for the 1st tab and last tab is return 
 chrome.runtime.onMessage.addListener(async (request, sender, reply) => {
     if (request.command == "getdelay") {
-        getRecommendation();
         reply({ delay: recommendation });
     } else if (request.command == "passrefresh") {
         console.log('Refresh all start at:' + new Date(request.refreshat) + "  " + request.refreshat);
@@ -386,6 +385,7 @@ async function autoBookingWS() {
             }
             setTimeout((x) => {
                 bookingTime = 0;
+                console.log("Final refresh..." + new Date());
                 refreshAllTabsWait(x);
             }, timeout, tabq.tabs);
             chrome.storage.sync.set({'latency': recommendation});
