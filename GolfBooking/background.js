@@ -298,10 +298,15 @@ async function refreshAllTabsWait(tabs) {
 
 function getRecommendation() {
     if (lastupdate.length > 2) {
-        var sum = 0;
-        lastupdate.forEach(x=>sum=sum+x.connectStart);
-        var midvalue = sum/lastupdate.length;
+        var values = lastupdate.map(value=>value.connectStart);
+        var sum =0;
+        values.forEach(x=>sum = sum+x);
+        values = values.sort((a,b)=>a>b);
+        var midvalue = values[Math.round(values.length/2)];
+        var midbymean = (sum/values.length) - cycleTime.refresh;
+        console.log("Recommendation Mean:  " + midbymean);
         recommendation = midvalue - cycleTime.refresh;
+        recommendation = midbymean;
         chrome.storage.sync.set({'latency': recommendation});
     } else {
         console.log('Warning: system unable provide recommenation. Default is used.');
@@ -334,40 +339,24 @@ function setBookingTime() {
         console.log('Not in booking range, system run in debug mode');
         console.log("Official booking target time: " + new Date(booking) + "  " + booking);
         console.log()
-        booking = new Date().setMilliseconds(0) + 20000;
+        booking = new Date().setMilliseconds(0) + 15000;
     }
+    //save it
+    chrome.storage.sync.set({'bookingtime': booking});
     return booking;
 }
 
-
-
 async function autoBookingWS() {
-    //check reload time
-    // var t500 = new Date().setHours(17, 0, 0, 0);
-    // var t930 = new Date().setHours(9, 30, 0, 0);
-    var t500 = new Date().setHours(17, 0, 0, 0);
-    var t930 = new Date().setHours(9, 30, 0, 0);
-    var nowTime = Date.now();
-    var booking = t930;
-    if (nowTime > t930) booking = t500;
-
     var tabq = await getAllTabs();
     golfTabs = tabq.tabs;
     var tab = tabq.currentTab;
-    var speed = 12000;
-    nowTime = Date.now();
-    var tooEarly = Math.abs(booking - nowTime);
-    if (tooEarly > (10 * 60 * 1000) || nowTime > booking) {
-        console.log('Not in booking range, system run in debug mode');
-        console.log("Official booking target time: " + new Date(booking) + "  " + booking);
-        booking = new Date().setMilliseconds(0) + 15000;
-        warningMessage("Debug mode!!!");
-        // await delay(2000);
-    }
+
+    var booking = setBookingTime()
     bookingTime = booking;
+    var speed = 12000;
     console.log("Booking target time: " + new Date(booking) + "  " + booking);
     //do the refresh and walk through to calate the traffic close to booking
-    var actualStart = Math.abs(booking - nowTime);
+    var actualStart = Math.abs(booking - Date.now());
     //refresh and walk through 7 sec before booking
     var reloadStart = actualStart - speed;
     console.log("1st reload after: " + reloadStart / 1000.0);

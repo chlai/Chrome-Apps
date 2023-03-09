@@ -50,7 +50,16 @@ chrome.storage.sync.get("tabwalker", ({tabwalker}) => {
 
   }else document.getElementById("timelist").innerHTML=tabwalker;
 });
+chrome.storage.sync.get('bookingtime', ({bookingtime})=>{
+  if(typeof bookingtime === 'undefined'){
 
+  }else{
+    var ele = document.getElementById("timelist");
+    var bookdate = new Date(bookingtime);
+    var str= '<p>'+bookdate.getMinutes()+":" + bookdate.getSeconds()+'</p>';
+    ele.innerHTML = str+ele.innerHTML;
+  }
+});
 
 document.getElementById('debugmode').addEventListener('change', () => {
   if (document.getElementById('debugmode').checked) {
