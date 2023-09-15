@@ -4,24 +4,15 @@
 <head>
   <title>Golf Booking</title>
   <style>
-    body {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      margin: 0;
-      padding: 0;
-      min-width:300px;
+    .popupwin {
+
+      height: 50%;
+      background-color: lightblue;
     }
 
     .np {
       margin: 7px;
-      font-size:smaller;
-    }
-
-    header,
-    main {
-      padding: 5px;
-      flex: 0 0 auto;
+      font-size: smaller;
     }
 
     .footer {
@@ -33,21 +24,22 @@
 
     .container {
       display: flex;
-      flex-direction: row;
       flex: 1 1 auto;
-      overflow-y: hidden;
+      overflow-y: none;
     }
 
     .left-column {
-      flex: 0.3 1 auto;
+      flex: 1 1 auto;
       background-color: lightblue;
       padding: 5px;
     }
 
     .right-column {
       flex: 1 1 auto;
+      max-height: 400px;
       background-color: lightgreen;
       padding: 5px;
+      overflow-y: auto;
     }
 
     .status {
@@ -68,7 +60,7 @@
 </head>
 
 <body>
-  <main>
+  <div class="popupwin">
     <div class="container">
       <div class="left-column">
         <p>
@@ -94,13 +86,13 @@
         </ul>
       </div>
     </div>
-  </main>
-  <div class="footer">
-    <p class='np' id="labelStatus">Golf booking</p>
-    <p class='np' id="ksclastrefresh">by Green Tech</p>
-    <p class='np' id="statusMessage">All rights reserved 2023</p>
-  </div>
 
+    <div class="footer">
+      <p class='np' id="labelStatus">Golf booking</p>
+      <p class='np' id="ksclastrefresh">by Green Tech</p>
+      <p class='np' id="statusMessage">All rights reserved 2023</p>
+    </div>
+  </div>
   <script src="./popup.js" type="module"></script>
 </body>
 
